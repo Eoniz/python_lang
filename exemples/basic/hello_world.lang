@@ -1,3 +1,5 @@
-str = "hello world"
-a = 5 + 4
-PRINT str
+Pour i = 0 jusqu'a 15 faire {
+    Si i < 2 faire {
+        afficher("salut")
+    }
+}

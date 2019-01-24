@@ -1,19 +1,12 @@
-from src.lexer.lang_lexer import *
+from src.lexer.lang_lexer import LangLexer
 
-def open_file(filename):
-    _file = open(filename, 'r')
-    data = _file.read()
-    _file.close()
+file = open('./exemples/basic/hello_world.lang')
 
-    return data
+data = file.read()
 
+file.close()
 
-def run():
-    data = open_file(sys.argv[1])
-
-    tokens = imp_lex(data)
-
-    for token in tokens:
-        print(token)
-
-run()
+lexer = LangLexer(data)
+tokens = lexer.lex()
+for token in tokens:
+    print(token)
