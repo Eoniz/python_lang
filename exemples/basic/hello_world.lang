@@ -1,5 +1,7 @@
-Pour i = 0 jusqu'a 15 faire {
-    Si i < 2 faire {
+Pour i <- 0 jusqu'a 15 faire
+    Si i == 2 faire
         afficher("salut")
-    }
-}
+    Fin si
+
+    afficher("hello")
+Fin pour

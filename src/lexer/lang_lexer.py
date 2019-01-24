@@ -72,7 +72,7 @@ class Token():
         self._index = _index
 
     def __repr__(self):
-        return f"Token(type={self._type}, value={self._value}, lineno={self._lineno}, index={self._index})"
+        return f'Token(type="{self._type}", value="{self._value}", lineno="{self._lineno}", index="{self._index}")'
 
 class LangLexer():
     RESERVED    = 'RESERVED'
@@ -84,42 +84,44 @@ class LangLexer():
     token_exprs = [
         (r'[ \t]+',                 None),
         (r'#[\n]*',                 None), # Comments
-        (r'\n',                  NEW_LINE), # New Line
-        (r'\:=',                    RESERVED),
+        (r'\n',                     NEW_LINE), # New Line
+        
+        (r'<-',                     RESERVED),
+        
         (r'\(',                     RESERVED),
         (r'\)',                     RESERVED),
         (r'\{',                     RESERVED),
         (r'\}',                     RESERVED),
-        (r';',                      RESERVED),
+
         (r'\+',                     RESERVED),
         (r'-',                      RESERVED),
         (r'\*',                     RESERVED),
         (r'/',                      RESERVED),
+        
         (r'<=',                     RESERVED),
         (r'<',                      RESERVED),
         (r'>=',                     RESERVED),
         (r'>',                      RESERVED),
-        (r'=',                      RESERVED),
         (r'!=',                     RESERVED),
         (r'==',                     RESERVED),
-        (r'and',                    RESERVED),
-        (r'or',                     RESERVED),
-        (r'not',                    RESERVED),
+        
+        (r'et',                     RESERVED),
+        (r'ou',                     RESERVED),
+        (r'non',                    RESERVED),
+
+        (r'Fin si',                 RESERVED),
         (r'Si',                     RESERVED),
         (r'faire',                  RESERVED),
         (r'Sinon',                  RESERVED),
+        (r'Fin pour',               RESERVED),
         (r'Pour',                   RESERVED),
         (r'jusqu\'a',               RESERVED),
         (r'Fin',                    RESERVED),
+        
         (r'\".*?\"',                STRING),
         (r'[0-9]+',                 INT),
         (r'[A-Za-z][A-Za-z0-9_]*',  ID),
     ]
-
-    """
-    Structure of a Token :
-    (type='', value='', lineno='', index='')
-    """
 
     def __init__(self, characters):
         self.characters = characters
@@ -129,6 +131,7 @@ class LangLexer():
             characters = self.characters
 
         pos = 0
+        linepos = 0
         noline = 0
         tokens = []
 
@@ -145,18 +148,20 @@ class LangLexer():
                     if tag:
                         if tag == 'NEW_LINE':
                             noline += 1
-                            pos = 0
+                            linepos = 0
                             break
 
-                        token = Token(_type=tag, _value=text, _lineno=noline, _index=pos)
+                        token = Token(_type=tag, _value=text, _lineno=noline, _index=linepos)
                         tokens.append(token)
                     break
                 
             if not match:
-                sys.stderr.write(f'Illegal character: {characters[pos]} at {pos} line {noline}\\n')
+                sys.stderr.write(f'Illegal character: {characters[pos]} at {linepos} line {noline}\\n')
                 sys.exit(1)
             else:
+                last_pos = pos
                 pos = match.end(0)
+                linepos += (pos - last_pos)
 
         return tokens
             
