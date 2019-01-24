@@ -1,0 +1,3 @@
+str = "hello world"
+a = 5 + 4
+PRINT str
