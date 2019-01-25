@@ -2,67 +2,18 @@
 import re
 import sys
 
-#
-#
-#class OldLexer(Lexer):
-#    tokens = { NUMBER, ID, PRINT, STRING, IF, THEN, ELSE, FOR, FUN, TO, EQEQ}
-#    ignore = ' \t'
-#
-#    literals = { '{', '}', '<', '>','=', '+', '-', '/', '*', '(', ')', ',', ';' }
-#
-#    # Define tokens
-#    TO = r"jusqu'a"
-#    STRING = r'\".*?\"'
-#
-#    EQEQ = r'=='
-#
-#    ID = r'[a-zA-Z_][a-zA-Z0-9_]*'
-#    ID['Fonction'] = FUN
-#    ID['Si'] = IF
-#    ID['Sinon'] = ELSE
-#    ID['Pour'] = FOR
-#    ID['faire'] = THEN
-#    ID['afficher'] = PRINT
-#
-#    def __init__(self):
-#        self.nesting_level = 0
-#
-#    @_(r'\{')
-#    def LBRACE(self, t):
-#        t.type = '{'      # Set token type to the expected literal
-#        self.nesting_level += 1
-#        return t
-#
-#    @_(r'\}')
-#    def RBRACE(self, t):
-#        t.type = '}'      # Set token type to the expected literal
-#        self.nesting_level -=1
-#        return t
-#
-#    @_(r'\d+')
-#    def NUMBER(self, t):
-#        t.value = int(t.value)
-#        return t
-#
-#    @_(r'#.*')
-#    def COMMENT(self, t):
-#        pass
-#
-#    @_(r'\n+')
-#    def newline(self,t ):
-#        self.lineno += t.value.count('\n')
-#
-#    def error(self, t):
-#        print('Line %d: Bad character %r' % (self.lineno, t.value[0]))
-#        self.index += 1
-#    
-
-#    ID['Fonction'] = FUN
-#    ID['Si'] = IF
-#    ID['Sinon'] = ELSE
-#    ID['Pour'] = FOR
-#    ID['faire'] = THEN
-#    ID['afficher'] = PRINT
+# ('for_loop', 
+#   ('for_loop_setup', 
+#       ('var_assign', 
+#           'i', ('num', 0)
+#       ), 
+#       ('num', 15)), 
+#   ('if_stmt', 
+#       ('inf', 
+#           ('var', 'i'), 
+#           ('num', 2)), 
+#               ('print', 
+#                   ('string', '"salut"'))))
 
 class Token():
     def __init__(self, _type, _value, _lineno, _index):
@@ -75,52 +26,48 @@ class Token():
         return f'Token(type="{self._type}", value="{self._value}", lineno="{self._lineno}", index="{self._index}")'
 
 class LangLexer():
-    RESERVED    = 'RESERVED'
-    INT         = 'INT'
-    ID          = 'ID'
-    STRING      = 'STRING'  
-    NEW_LINE    = 'NEW_LINE'
-
     token_exprs = [
         (r'[ \t]+',                 None),
         (r'#[\n]*',                 None), # Comments
-        (r'\n',                     NEW_LINE), # New Line
+        (r'\n',                     'NEWLINE'), # New Line
         
-        (r'<-',                     RESERVED),
+        (r'<-',                     'SET'),
+        (r';',                      'SEMICOL'),
         
-        (r'\(',                     RESERVED),
-        (r'\)',                     RESERVED),
-        (r'\{',                     RESERVED),
-        (r'\}',                     RESERVED),
+        (r'\(',                     'LPAR'),
+        (r'\)',                     'RPAR'),
+        (r'\{',                     'LBRACE'),
+        (r'\}',                     'RBRACE'),
 
-        (r'\+',                     RESERVED),
-        (r'-',                      RESERVED),
-        (r'\*',                     RESERVED),
-        (r'/',                      RESERVED),
+        (r'\+',                     'PLUS'),
+        (r'-',                      'MINUS'),
+        (r'\*',                     'MUL'),
+        (r'/',                      'DIV'),
         
-        (r'<=',                     RESERVED),
-        (r'<',                      RESERVED),
-        (r'>=',                     RESERVED),
-        (r'>',                      RESERVED),
-        (r'!=',                     RESERVED),
-        (r'==',                     RESERVED),
+        (r'<=',                     'INFEQ'),
+        (r'<',                      'INF'),
+        (r'>=',                     'SUPEQ'),
+        (r'>',                      'SUP'),
+        (r'!=',                     'NOTEQ'),
+        (r'==',                     'EQEQ'),
         
-        (r'et',                     RESERVED),
-        (r'ou',                     RESERVED),
-        (r'non',                    RESERVED),
+        (r'et',                     'AND'),
+        (r'ou',                     'OR'),
+        (r'non',                    'NOT'),
 
-        (r'Fin si',                 RESERVED),
-        (r'Si',                     RESERVED),
-        (r'faire',                  RESERVED),
-        (r'Sinon',                  RESERVED),
-        (r'Fin pour',               RESERVED),
-        (r'Pour',                   RESERVED),
-        (r'jusqu\'a',               RESERVED),
-        (r'Fin',                    RESERVED),
-        
-        (r'\".*?\"',                STRING),
-        (r'[0-9]+',                 INT),
-        (r'[A-Za-z][A-Za-z0-9_]*',  ID),
+        (r'Fin si',                 'ENDIF'),
+        (r'Si',                     'IF'),
+        (r'faire',                  'THEN'),
+        (r'Sinon',                  'ELSE'),
+        (r'Fin pour',               'ENDFOR'),
+        (r'Pour',                   'FOR'),
+        (r'jusqu\'a',               'TO'),
+        (r'Fin',                    'END'),
+
+        (r'afficher',               'PRINT'),
+        (r'\".*?\"',                'STRING'),
+        (r'[0-9]+',                 'INT'),
+        (r'[A-Za-z][A-Za-z0-9_]*',  'ID'),
     ]
 
     def __init__(self, characters):
@@ -146,7 +93,7 @@ class LangLexer():
                 if match:
                     text = match.group(0)
                     if tag:
-                        if tag == 'NEW_LINE':
+                        if tag == 'NEWLINE':
                             noline += 1
                             linepos = 0
                             break
